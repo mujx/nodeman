@@ -27,6 +27,7 @@ Commands:
   latest   Install the latest version
   ls       Show all the available versions
   rm       Remove a version
+  search   Search upstream for available versions
   sync     Sync globally installed packages among versions
   use      Switch to a different version
 ```
@@ -45,5 +46,13 @@ $ nodeman ls
 5.1.0
 
 $ nodeman use 5.1.0
+```
+
+Searching
+
+```bash
+$ nodeman search 5.1
+5.1.0
+5.1.1
 ```
 
