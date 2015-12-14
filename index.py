@@ -7,17 +7,14 @@ import shutil
 
 from subprocess import call
 from pkg_resources import require
-from string import Template
 
 import requests
 import click
 import semver
 
 from bs4 import BeautifulSoup
+from config import DIST_URL, STORAGE, TEMP_STORAGE, TARFILE
 
-TEMP_STORAGE = '/tmp/node-versions/'
-STORAGE = os.path.expanduser('~') + '/.node-versions'
-TARFILE = Template(TEMP_STORAGE + 'node-v$version.tar.gz')
 
 if not os.path.exists(STORAGE):
     try:
@@ -91,16 +88,14 @@ def installed_packages(versions=installed_versions()):
 
 
 def extract_link(version):
-    DIST_URL = 'https://nodejs.org/dist/'
-
     if version == 'latest':
-        DIST_URL += version + '/'
+        url = DIST_URL + version + '/'
     else:
         semver.parse(version)
-        DIST_URL += 'v' + version + '/'
+        url = DIST_URL + 'v' + version + '/'
 
     system, arch, _ = get_system_info()
-    content = BeautifulSoup(requests.get(DIST_URL).content, 'html.parser')
+    content = BeautifulSoup(requests.get(url).content, 'html.parser')
 
     for a in content.find_all('a'):
         link = a['href']
@@ -109,7 +104,7 @@ def extract_link(version):
                 version = link.split('-')[1].split('v')[1]
                 break
 
-    return (DIST_URL + link, version,)
+    return (url + link, version,)
 
 
 def get_system_info():
@@ -251,6 +246,27 @@ def use(version):
         sys.exit(1)
 
     append_to_path(version)
+
+
+@cli.command()
+@click.argument('version')
+def search(version):
+    """
+    Search upstream for available versions
+    """
+    content = BeautifulSoup(requests.get(DIST_URL).content, 'html.parser')
+
+    available = []
+
+    for a in content.find_all('a'):
+        link = a['href']
+        if link.startswith('v' + version):
+            available.append(link.split('/')[0].split('v')[1])
+
+    available = sorted(available, key=functools.cmp_to_key(semver.compare))
+
+    for v in available:
+        print (v)
 
 
 @cli.command()
