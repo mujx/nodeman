@@ -13,7 +13,7 @@ import click
 import semver
 
 from bs4 import BeautifulSoup
-from config import DIST_URL, STORAGE, TEMP_STORAGE, TARFILE
+from nodeman.config import DIST_URL, STORAGE, TEMP_STORAGE, TARFILE
 
 
 if not os.path.exists(STORAGE):
