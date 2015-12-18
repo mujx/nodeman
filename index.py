@@ -122,7 +122,7 @@ def get_system_info():
     else:
         raise OSError
 
-    return system + '-' + arch
+    return system.lower() + '-' + arch
 
 
 def get_shell_config():
