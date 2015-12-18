@@ -94,7 +94,7 @@ def extract_link(version):
         semver.parse(version)
         url = DIST_URL + 'v' + version + '/'
 
-    system, arch, _ = get_system_info()
+    system, arch = get_system_info().split('-')
     content = BeautifulSoup(requests.get(url).content, 'html.parser')
 
     for a in content.find_all('a'):
@@ -110,12 +110,10 @@ def extract_link(version):
 def get_system_info():
     bits, _ = platform.architecture()
     system = platform.system()
-    config = os.path.expanduser('~/.bashrc')
+    machine = platform.machine()
 
-    if os.environ['SHELL'].endswith('zsh'):
-        config = os.path.expanduser('~/.zshrc')
-    elif os.environ['SHELL'].endswith('bash'):
-        config = os.path.expanduser('~/.bashrc')
+    if machine.lower().startswith('arm'):
+        return 'linux-' + machine.lower()
 
     if bits.startswith('32'):
         arch = 'x86'
@@ -124,7 +122,18 @@ def get_system_info():
     else:
         raise OSError
 
-    return (system.lower(), arch, config,)
+    return system + '-' + arch
+
+
+def get_shell_config():
+    config = os.path.expanduser('~/.bashrc')
+
+    if os.environ['SHELL'].endswith('zsh'):
+        config = os.path.expanduser('~/.zshrc')
+    elif os.environ['SHELL'].endswith('bash'):
+        config = os.path.expanduser('~/.bashrc')
+
+    return config
 
 
 @cli.command()
@@ -142,7 +151,7 @@ def rm(version):
     print(':: deleting binary...')
     shutil.rmtree(STORAGE + '/' + version)
 
-    _, _, config = get_system_info()
+    config = get_shell_config()
 
     content = []
     with open(config, 'r') as f:
@@ -202,8 +211,8 @@ def install(version, link='', from_ctx=False):
     with tarfile.open(tarball, 'r:gz') as f:
         f.extractall(path=STORAGE)
 
-    system, arch, _ = get_system_info()
-    os.rename(STORAGE + '/' + 'node-v' + version + '-' + system + '-' + arch,
+    system = get_system_info()
+    os.rename(STORAGE + '/' + 'node-v' + version + '-' + system,
               STORAGE + '/' + version)
 
     print(':: installing...')
@@ -213,7 +222,7 @@ def install(version, link='', from_ctx=False):
 
 def append_to_path(version):
 
-    _, _, config = get_system_info()
+    config = get_shell_config()
 
     print(':: updating', config)
 
