@@ -23,6 +23,7 @@ Options:
 
 Commands:
   clean    Remove all the installed versions
+  current  Show the version in usage
   install  Install a version
   latest   Install the latest version
   ls       Show all the available versions
@@ -56,3 +57,8 @@ $ nodeman search 5.1
 5.1.1
 ```
 
+Install the latest stable version
+
+```bash
+$ nodeman latest --branch 5
+```

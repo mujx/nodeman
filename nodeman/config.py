@@ -1,7 +1,5 @@
 import os
-
 from string import Template
-
 
 TEMP_STORAGE = '/tmp/node-versions/'
 
