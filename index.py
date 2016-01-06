@@ -33,12 +33,35 @@ def cli(version):
 
 @cli.command()
 @click.pass_context
-def latest(ctx):
+@click.option('--b', '--branch', help='The release branch to use')
+def latest(ctx, branch):
     """
     Install the latest version
     """
-    link, version = utils.extract_link('latest')
+    if branch is None:
+        current = utils.get_current_version()
+        if current:
+            branch = current.split('.')[0]
+        else:
+            print(':: No version is installed')
+            return
+
+    latest = utils.search_upstream(branch)[-1]
+    link, version = utils.extract_link(latest)
     ctx.invoke(install, version=version, link=link, from_ctx=True)
+
+
+@cli.command()
+def current():
+    """
+    Show the version in usage
+    """
+    current = utils.get_current_version()
+
+    if not current:
+        print(':: There is no active version')
+    else:
+        print(current)
 
 
 @cli.command()
@@ -166,23 +189,12 @@ def use(version):
 
 
 @cli.command()
-@click.argument('version')
-def search(version):
+@click.argument('query')
+def search(query):
     """
     Search upstream for available versions
     """
-    content = BeautifulSoup(requests.get(DIST_URL).content, 'html.parser')
-
-    available = []
-
-    for a in content.find_all('a'):
-        link = a['href']
-        if link.startswith('v' + version):
-            available.append(link.split('/')[0].split('v')[1])
-
-    available = sorted(available, key=functools.cmp_to_key(semver.compare))
-
-    for v in available:
+    for v in utils.search_upstream(query):
         print(v)
 
 

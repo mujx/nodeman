@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 
 from nodeman.config import DIST_URL, STORAGE
 
+NODEMAN_EXPORT = 'export PATH=' + STORAGE + '/'
+
 
 def installed_versions():
     """
@@ -20,6 +22,25 @@ def installed_versions():
     versions = sorted(versions, key=functools.cmp_to_key(semver.compare))
 
     return versions
+
+
+def get_current_version():
+    candidates = []
+    config = get_shell_config()
+
+    with open(config, 'r') as f:
+        content = f.read().rstrip().split('\n')
+        for line in content:
+            if NODEMAN_EXPORT in line:
+                candidates.append(extract_version(line))
+    if candidates:
+        return candidates[-1]
+    else:
+        return candidates
+
+
+def extract_version(export):
+    return export.split('/')[-2]
 
 
 def installed_packages(versions=installed_versions()):
@@ -87,21 +108,33 @@ def get_shell_config():
     return config
 
 
+def search_upstream(query):
+    available = []
+    content = BeautifulSoup(requests.get(DIST_URL).content, 'html.parser')
+
+    for a in content.find_all('a'):
+        link = a['href']
+        if link.startswith('v' + query):
+            available.append(link.split('/')[0].split('v')[1])
+
+    return sorted(available, key=functools.cmp_to_key(semver.compare))
+
+
 def append_to_path(version):
 
     config = get_shell_config()
 
     print(':: updating', config)
 
-    nodeman_export = 'export PATH=' + STORAGE + '/'
+    NODEMAN_EXPORT = 'export PATH=' + STORAGE + '/'
     with open(config, 'r') as f:
         content = f.read().rstrip().split('\n')
 
         for i, line in enumerate(content):
-            if nodeman_export in line:
+            if NODEMAN_EXPORT in line:
                 del content[i]
 
-        cmd = nodeman_export + version + '/bin:$PATH'
+        cmd = NODEMAN_EXPORT + version + '/bin:$PATH'
         content.append(cmd)
 
     with open(config, 'w') as f:
