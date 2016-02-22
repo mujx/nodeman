@@ -1,6 +1,4 @@
-import functools
 import os
-import platform
 import shutil
 import sys
 import tarfile
@@ -9,17 +7,17 @@ from subprocess import call
 import click
 import requests
 import semver
-from bs4 import BeautifulSoup
 from pkg_resources import require
 
-import nodeman.utils as utils
-from nodeman.config import DIST_URL, STORAGE, TARFILE, TEMP_STORAGE
+from nodeman.config import STORAGE, TARFILE, TEMP_STORAGE
 
 if not os.path.exists(STORAGE):
     try:
         os.mkdir(STORAGE)
     except OSError as e:
         print(e)
+
+import nodeman.utils as utils
 
 
 @click.group(invoke_without_command=True)
@@ -33,7 +31,7 @@ def cli(version):
 
 @cli.command()
 @click.pass_context
-@click.option('--b', '--branch', help='The release branch to use')
+@click.option('-b', '--branch', help='The release branch to use')
 def latest(ctx, branch):
     """
     Install the latest version
@@ -81,10 +79,11 @@ def sync():
     pkgs = utils.installed_packages()
 
     for version in utils.installed_versions():
-        print(':: installing for', version)
         diff = pkgs.difference(utils.installed_packages(versions=[version]))
+        if diff:
+            print(':: installing for v%s' % version)
         for pkg in diff:
-            print('=>', pkg)
+            print('=> %s' % pkg)
             path = STORAGE + '/' + version + '/bin/'
             call([path + 'npm', 'i', '-g', pkg])
 
@@ -98,7 +97,7 @@ def rm(version):
     semver.parse(version)
 
     if not os.path.exists(STORAGE + '/' + version):
-        print(':: %s is not installed' % version)
+        print(':: v%s is not installed' % version)
         return
 
     print(':: deleting binary...')
@@ -112,7 +111,7 @@ def rm(version):
 
         for i, line in enumerate(content):
             if STORAGE + '/' + version in line:
-                print(':: cleaning up', config)
+                print(':: cleaning up %s' % config)
                 del content[i]
 
     with open(config, 'w') as f:
@@ -135,7 +134,7 @@ def install(version, link='', from_ctx=False):
             raise e
 
     if os.path.exists(STORAGE + '/' + version):
-        print(':: %s is already installed' % version)
+        print(':: v%s is already installed' % version)
         return
 
     if not from_ctx:
@@ -182,7 +181,7 @@ def use(version):
     semver.parse(version)
 
     if not os.path.exists(STORAGE + '/' + version):
-        print(':: version', version, 'is not installed.')
+        print(':: v%s is not installed.' % version)
         sys.exit(1)
 
     utils.append_to_path(version)
@@ -199,8 +198,10 @@ def search(query):
 
 
 @cli.command()
-def clean():
+@click.pass_context
+def clean(ctx):
     """
     Remove all the installed versions
     """
+    ctx.invoke(rm, version=utils.get_current_version())
     shutil.rmtree(STORAGE)

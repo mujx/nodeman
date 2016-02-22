@@ -124,7 +124,7 @@ def append_to_path(version):
 
     config = get_shell_config()
 
-    print(':: updating', config)
+    print(':: updating %s' % config)
 
     NODEMAN_EXPORT = 'export PATH=' + STORAGE + '/'
     with open(config, 'r') as f:

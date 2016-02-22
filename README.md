@@ -4,10 +4,8 @@ nodeman  [![PyPI version](https://badge.fury.io/py/nodeman.svg)](https://badge.f
 #### Installation
 
 ```bash
-pip3 install nodeman
+pip install nodeman
 ```
-It might work with Python 2.7 but it's not supported.
-
 #### Usage
 
 ```
