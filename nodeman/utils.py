@@ -3,6 +3,7 @@
 
 import functools
 import os
+import codecs
 import platform
 
 import requests
@@ -28,7 +29,7 @@ def get_current_version():
     candidates = []
     config = get_shell_config()
 
-    with open(config, 'r') as f:
+    with codecs.open(config, 'r', 'utf-8') as f:
         content = f.read().rstrip().split('\n')
         for line in content:
             if NODEMAN_EXPORT in line:
@@ -127,7 +128,7 @@ def append_to_path(version):
     print(':: updating %s' % config)
 
     NODEMAN_EXPORT = 'export PATH=' + STORAGE + '/'
-    with open(config, 'r') as f:
+    with codecs.open(config, 'r', 'utf-8') as f:
         content = f.read().rstrip().split('\n')
 
         for i, line in enumerate(content):
@@ -137,6 +138,6 @@ def append_to_path(version):
         cmd = NODEMAN_EXPORT + version + '/bin:$PATH'
         content.append(cmd)
 
-    with open(config, 'w') as f:
+    with codecs.open(config, 'w', 'utf-8') as f:
         f.write('\n'.join(content))
         f.write('\n')

@@ -1,4 +1,5 @@
 import os
+import codecs
 import shutil
 import sys
 import tarfile
@@ -106,7 +107,7 @@ def rm(version):
     config = utils.get_shell_config()
 
     content = []
-    with open(config, 'r') as f:
+    with codecs.open(config, 'r', 'utf-8') as f:
         content = f.read().split('\n')
 
         for i, line in enumerate(content):
@@ -114,7 +115,7 @@ def rm(version):
                 print(':: cleaning up %s' % config)
                 del content[i]
 
-    with open(config, 'w') as f:
+    with codecs.open(config, 'w', 'utf-8') as f:
         f.write('\n'.join(content))
 
 

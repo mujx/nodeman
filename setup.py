@@ -3,7 +3,7 @@ from setuptools import setup
 
 
 setup(name='nodeman',
-      version='0.5.1',
+      version='0.5.2',
       packages=['nodeman'],
       py_modules=['index'],
       description='CLI tool to manage Node.js binaries',
