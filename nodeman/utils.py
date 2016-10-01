@@ -52,10 +52,24 @@ def installed_packages(versions=installed_versions()):
     for directory in os.listdir(STORAGE):
         if directory in versions:
             for b in os.listdir(STORAGE + '/' + directory + '/bin/'):
-                if b != 'npm' and b != 'node' and not b.startswith('_'):
+                if b != 'npm' and b != 'node' and in_registry(b):
                     bins.add(b)
     return bins
 
+def in_registry(name):
+    """
+    Check if a package is available in the npm registry.
+    """
+    res = requests.get('https://registry.npmjs.org/' + name)
+
+    if res.text:
+        data = res.json()
+        keys = data.keys()
+
+        if len(keys) > 0 and 'name' in keys:
+            return True
+
+    return False
 
 def extract_link(version):
     """
