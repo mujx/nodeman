@@ -12,10 +12,10 @@ setup(name='nodeman',
       url='https://github.com/mujx/nodeman',
       license='MIT',
       install_requires=[
-          'Click==5.1',
-          'semver==2.2',
-          'BeautifulSoup4==4.4',
-          'requests==2.8'
+          'Click == 5.*',
+          'semver == 2.*',
+          'BeautifulSoup4 == 4.*',
+          'requests == 2.*'
           ],
       entry_points='''
         [console_scripts]
